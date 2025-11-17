@@ -7,6 +7,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 # ===========================
 # Google Sheets 연결
 # ===========================
+credentials = st.secrets["gcp_service_account"]
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
 client = gspread.authorize(creds)
@@ -62,3 +63,4 @@ if st.button("제출"):
     else:
         sheet.append_row([user_id, sex, age, my_mbti, npc_mbti, choice, score])
         st.success("데이터가 저장되었습니다! 참여해주셔서 감사합니다.")
+
