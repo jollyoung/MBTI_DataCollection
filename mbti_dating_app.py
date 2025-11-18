@@ -266,5 +266,7 @@ if st.button("제출"):
         row.extend([choice, score])
     row.append(timestamp)
 
-    save_to_sheet(row)
+    save_row_to_sheet(row)
+
     st.success("데이터가 저장되었습니다! 참여해줘서 고마워요 🙌")
+
