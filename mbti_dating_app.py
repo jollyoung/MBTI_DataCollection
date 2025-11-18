@@ -30,8 +30,8 @@ def load_html_template(file_path: str) -> str:
 # ===========================
 # 채팅 UI 헬퍼
 # ===========================
-def make_chat_renderer(template: str):
-    def render(role: str, text: str):
+def make_chat_renderer(template: str, role: str):
+    def render(text: str):
         html = template.replace("{{role}}", role).replace("{{text}}", text)
         st.markdown(html, unsafe_allow_html=True)
     return render
@@ -104,8 +104,8 @@ def get_scenario_by_mbti(mbti):
 load_css("styles.css")
 chat_template = load_html_template("chat_template.html")
 
-chat_npc = make_chat_renderer(chat_template)   # 좌측 말풍선
-chat_user = make_chat_renderer(chat_template)  # 우측 말풍선 (role만 다르게 넘김)
+chat_npc = make_chat_renderer(chat_template, "npc")
+chat_user = make_chat_renderer(chat_template, "user")
 
 
 # ===========================
@@ -194,3 +194,4 @@ if st.button("제출"):
 
     save_row_to_sheet(row)
     st.success("데이터가 저장되었습니다! 참여해줘서 고마워요 🙌")
+
