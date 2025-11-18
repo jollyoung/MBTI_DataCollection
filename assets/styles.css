@@ -1,57 +1,41 @@
-/* 카카오톡 스타일 대화창 전체 배경 */
 .chat-container {
     background-color: #ECECEC;
-    padding: 20px;
+    padding: 12px 16px;
     border-radius: 10px;
     max-width: 500px;
-    margin: auto;
+    margin: 6px auto;
 }
 
-/* 말풍선 기본 구조 */
 .message {
     display: flex;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 
-/* 말풍선 좌우 정렬 */
 .message.user {
     justify-content: flex-end;
 }
 
-/* 말풍선 UI */
 .bubble {
     max-width: 70%;
     padding: 10px 14px;
     border-radius: 15px;
-    font-size: 16px;
+    font-size: 15px;
     line-height: 1.4;
     word-break: keep-all;
 }
 
-/* NPC 말풍선 (좌측, 흰색) */
 .bubble.npc {
-    background-color: white;
-    border: 1px solid #DDD;
+    background-color: #FFFFFF;
+    border: 1px solid #DDDDDD;
     border-radius: 15px 15px 15px 0px;
 }
 
-/* 유저 말풍선 (우측, 초록색) */
 .bubble.user {
     background-color: #A0E75A;
     border-radius: 15px 15px 0px 15px;
 }
 
-/* 선택지 버튼 디자인 */
-.choice-button {
-    background-color: white;
-    padding: 12px;
-    margin-top: 10px;
-    border-radius: 12px;
-    border: 1px solid #CCC;
-    cursor: pointer;
-    text-align: center;
-}
-
-.choice-button:hover {
-    background-color: #f2f2f2;
+/* 선택지 주변 간격 살짝 */
+.stRadio > div {
+    padding-left: 4px;
 }
