@@ -3,6 +3,8 @@ import gspread
 import uuid
 from google.oauth2.service_account import Credentials
 from datetime import datetime
+from zoneinfo import ZoneInfo
+
 
 # ===========================
 # Google Sheets 연결
@@ -248,7 +250,7 @@ for idx, step in enumerate(scenario_steps):
     st.write("---")
 
 if st.button("제출"):
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.now(ZoneInfo("Asia/Seoul")).strftime("%Y-%m-%d %H:%M:%S")
 
     # 시트에 저장할 한 줄 구성
     # 시트 헤더 예시:
@@ -269,4 +271,5 @@ if st.button("제출"):
     save_row_to_sheet(row)
 
     st.success("데이터가 저장되었습니다! 참여해줘서 고마워요 🙌")
+
 
