@@ -1,13 +1,15 @@
 import streamlit as st
-import pandas as pd
 import gspread
 import uuid
 from google.oauth2.service_account import Credentials
+from datetime import datetime
 
 # ===========================
 # Google Sheets 연결
 # ===========================
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+scope = ["https://www.googleapis.com/auth/spreadsheets",
+         "https://www.googleapis.com/auth/drive"]
+
 credentials = Credentials.from_service_account_info(
     st.secrets["gcp_service_account"], scopes=scope
 )
@@ -15,57 +17,129 @@ credentials = Credentials.from_service_account_info(
 client = gspread.authorize(credentials)
 sheet = client.open("MBTI_Dating_Data").sheet1
 
-# ===========================
-# 유저 UUID 생성 (세션당 1회)
-# ===========================
-if "user_id" not in st.session_state:
-    st.session_state.user_id = str(uuid.uuid4())  # 랜덤 고유 ID 생성
 
-user_id = st.session_state.user_id
+# ===========================
+# 함수
+# ===========================
+def create_uuid():
+    """고유 사용자 UUID 생성"""
+    return str(uuid.uuid4())
+
+
+def save_to_sheet(row):
+    """Google Sheets에 한 줄 저장"""
+    sheet.append_row(row)
+
+
+def scenario_for_mbti(style):
+    """성격 선택(밝고/차갑고/차분함)에 따라 시나리오 반환"""
+
+    return {
+        "밝고 활발": [
+            {
+                "npc": "안녕하세요! 소개받게 되어 반갑습니다!",
+                "choices": ["밝게 인사하기", "미소만 지으며 인사", "장난치며 인사"]
+            },
+            {
+                "npc": "취미가 어떻게 되세요?",
+                "choices": ["운동 좋아해요", "여행 좋아해요", "그냥 쉬는 게 좋아요"]
+            },
+            {
+                "npc": "다음에 또 뵐까요?",
+                "choices": ["좋아요!", "음… 생각해볼게요", "아직 잘 모르겠어요"]
+            }
+        ],
+
+        "차갑고 이성적": [
+            {
+                "npc": "오늘 약속 잘 지켜서 왔네요.",
+                "choices": ["예의 바르게 대답", "담백하게 '네'만 말하기", "직설적으로 말하기"]
+            },
+            {
+                "npc": "최근 읽은 책 있으세요?",
+                "choices": ["심리학 책", "경제 관련 책", "소설 책"]
+            },
+            {
+                "npc": "다음 미팅 잡을까요?",
+                "choices": ["좋습니다", "아직은 잘…", "천천히 생각하고 싶어요"]
+            }
+        ],
+
+        "차분하고 안정적": [
+            {
+                "npc": "편하게 이야기 나눠요.",
+                "choices": ["부드럽게 대답", "조용히 끄덕임", "‘긴장되네요’라고 말함"]
+            },
+            {
+                "npc": "어떤 취미 좋아하세요?",
+                "choices": ["산책", "요리", "음악 듣기"]
+            },
+            {
+                "npc": "또 만날까요?",
+                "choices": ["네, 좋아요", "글쎄요", "천천히 알아가요"]
+            }
+        ]
+    }[style]
+
 
 # ===========================
 # UI
 # ===========================
-st.title("MBTI 데이트 시뮬레이션")
-st.write("간단한 소개팅 시뮬레이션을 통해 MBTI별 선호 행동 데이터를 수집합니다.")
+st.title("내 MBTI를 공략해라! ❤️‍🔥")
+st.write("※ 당신의 MBTI를 공략하려면 어떤 선택이 효과적인지 데이터를 수집하는 게임입니다.")
 
-# 유저 정보 입력
-sex = st.selectbox("성별 선택", ["남성", "여성"])
-age = st.number_input("나이 입력", min_value=10, max_value=100, value=20)
-my_mbti = st.selectbox("자신의 MBTI 선택", [
+# 유저 정보
+sex = st.selectbox("성별", ["남성", "여성"])
+age = st.number_input("나이", min_value=10, max_value=100, value=20)
+my_mbti = st.selectbox("당신의 MBTI", [
     "INFP","INFJ","INTP","INTJ","ISFP","ISFJ","ISTP","ISTJ",
     "ENFP","ENFJ","ENTP","ENTJ","ESFP","ESFJ","ESTP","ESTJ"
 ])
 
-npc_mbti_options = ["밝고 활발", "차갑고 이성적", "차분하고 안정적"]
-npc_mbti = st.selectbox("데이트 상대 유형 선택", npc_mbti_options)
-
 st.write("---")
 
-st.write(f"{npc_mbti} 상대와 첫 만남, 어떻게 행동할까요?")
+# 1단계: 첫인상 컨셉 선택
+st.subheader("1단계: 첫인상을 어떻게 만들까요?")
+first_style = st.radio(
+    "첫인상 스타일 선택:",
+    ["밝고 활발", "차갑고 이성적", "차분하고 안정적"]
+)
 
-choice = st.radio("선택지:",
-                  ["자신감 있게 먼저 대화 시작", 
-                   "조용히 상대 말 듣기", 
-                   "장난스럽게 분위기 끌기"])
+# 시나리오 불러오기
+scenario = scenario_for_mbti(first_style)
 
-score = st.slider("상대의 호감도(0~10)", 0, 10, 5)
+st.write("---")
+st.subheader("2~4단계: 시나리오 진행")
 
-# ===========================
+all_choices = []
+
+for i, step in enumerate(scenario):
+    st.write(f"### 🗣 NPC: {step['npc']}")
+    selected = st.radio(f"선택지 {i+1}", step["choices"], key=f"sel_{i}")
+    score = st.slider(f"호감도 평가 {i+1} (0~10)", 0, 10, 5, key=f"score_{i}")
+    all_choices.append((selected, score))
+    st.write("---")
+
 # 제출 버튼
-# ===========================
 if st.button("제출"):
+    user_id = create_uuid()
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # Google Sheets에서 기존 user_id 목록 가져오기
-    rows = sheet.get_all_records()
-    existing_ids = [r["user_id"] for r in rows]
+    row = [
+        user_id,
+        sex,
+        age,
+        my_mbti,      # 유저 MBTI
+        my_mbti,      # NPC MBTI = 유저 MBTI
+        first_style   # 첫 번째 선택
+    ]
 
-    if user_id in existing_ids:
-        st.warning("이미 제출한 기록이 있습니다! (중복 제출 방지)")
-    else:
-        sheet.append_row([user_id, sex, age, my_mbti, npc_mbti, choice, score])
-        st.success("데이터가 저장되었습니다! 참여해주셔서 감사합니다.")
+    # 각 단계 선택 + 점수 저장
+    for selected, score in all_choices:
+        row.extend([selected, score])
 
+    row.append(timestamp)
 
+    save_to_sheet(row)
 
-
+    st.success("🎉 데이터가 성공적으로 저장되었습니다! 참여해주셔서 감사합니다.")
