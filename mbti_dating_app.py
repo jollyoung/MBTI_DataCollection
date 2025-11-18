@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import gspread
 import uuid
-from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2.service_account import Credentials
 
 # ===========================
 # Google Sheets 연결
@@ -64,5 +64,6 @@ if st.button("제출"):
     else:
         sheet.append_row([user_id, sex, age, my_mbti, npc_mbti, choice, score])
         st.success("데이터가 저장되었습니다! 참여해주셔서 감사합니다.")
+
 
 
